@@ -30,3 +30,39 @@
 pbinom(10, 20, .1, lower.tail = FALSE)
 binom.test(11, 20, .1, alternative = "greater") # pvalue 7e-7
 
+## Comparing two binomials
+## Example: Test to see if proportion of side effects is the same in two groups.
+## Let X ~ Binomial(p1, n1) and p1_hat = X/n1
+## Let Y ~ Binomial(p2, n2) and p2_hat = Y/n2
+## Score test of the hypothesis, H0: p1 = p2
+## Versus H1: p1 != p2, H2: p1 > p2, H3: p2 > p1
+## The Score Statistic (normally distributed for large n1 and n2):
+##   TS = (p1_hat - p2_hat) / sqrt(p_hat(1 - p_hat)(1/n1 + 1/n2))
+##  where p_hat = (X+Y)/(n1+n2) is the estimate of the common proportion under the
+##   null hypothesis
+##
+## Alternatively, the Wald interval:
+##  TS = (p1_hat - p2_hat) / sqrt( p1_hat(1-p1_hat)/n1 + p2_hat(1-p2_hat)/n2 )
+## Which has a confidence interval:
+##  p1_hat - p2_hat +- Z_(1-alpha/2) * sqrt( p1_hat(1-p1_hat)/n1 + p2_hat(1-p2_hat)/n2 )
+## Note: p1_hat(1-p1_hat)/n1 + p2_hat(1-p2_hat)/n2  is the SE here
+
+## Bayesian and Likelihood inference for two binomial proportions
+## Bayesian:
+## Consider putting independent Beta(alpha1, beta1) and Beta(alpha2, beta2) on p1 and p2
+## Then the posterior is:
+##  Lik(p1, p2) ~ p1^(x + alpha1 - 1)*(1 - p1)^(n1 + beta1 - 1) * p2^(y + alpha2 - 1)*
+##    (1 - p2)^(y + beta2 - 1)
+## Hence under this (potentially naive) prior, the posterior for p1 and p2 are
+##  independent betas
+## And, the easiest way to explore this posterior is via Monte Carlo
+## Example ir R:
+x <- 11; n1 <- 20; alpha1 <- 1; beta1 <- 1; ## uniform prior (alpha, beta = 1)
+y <- 5; n2 <- 20; alpha2 <- 1; beta2 <- 1;
+p1 <- rbeta(1000, x + alpha1, n1 - x + beta1)
+p2 <- rbeta(1000, y + alpha2, n2 - y + beta2)
+rd <- p2 - p1 ## looking at risk difference (i.e. risk of side effects)
+plot(density(rd))
+quantile(rd, c(0.025, 0.975))
+mean(rd)
+median(rd)
